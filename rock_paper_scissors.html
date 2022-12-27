@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Rock-Paper-Scissors</title>
+<script>
+'use strict';
+
+// Three previous human moves
+let tminus1 = 0;
+let tminus2 = 0;
+let tminus3 = 0;
+
+// Total number of rounds played
+let rounds = 0;
+
+// Initialize all counters with zeroes
+let rock_counter = new Array(3 * 3 * 3);
+let paper_counter = new Array(3 * 3 * 3);
+let scissors_counter = new Array(3 * 3 * 3);
+for (let i = 0; i < 3 * 3 * 3; i++) {
+  rock_counter[i] = 0;
+  paper_counter[i] = 0;
+  scissors_counter[i] = 0;
+}
+
+// Note that this function does not know current human move, only the history of previous moves
+function ai_move()
+{
+  if (rounds < 3) {
+    return Math.floor(Math.random() * 3);
+  }
+  let index = (tminus3 * 3 + tminus2) * 3 + tminus1;
+  let r = rock_counter[index];
+  let p = paper_counter[index];
+  let s = scissors_counter[index];
+  if (r > p) {
+    if (r > s) {
+      return 1; // Predict rock, return paper
+    } else if (r < s) {
+      return 0; // Predict scissors, return rock
+    } else {
+      if (Math.random() < 0.5) { // Paper is worse, coin toss between rock and scissors
+        return 1; // Predict rock, return paper 
+      } else {
+        return 0; // Predict scissors, return rock
+      }
+    }
+  } else if (r < p) {
+    if (p > s) {
+      return 2; // Predict paper, return scissors
+    } else if (p < s) {
+      return 0; // Predict scissors, return rock 
+    } else {
+      if (Math.random() < 0.5) { // Rock is worse, coin toss between paper and scissors
+        return 2; // Predict paper, return scissors 
+      } else {
+        return 0; // Predict scissors, return rock
+      }
+    }
+  } else {
+    if (s > r) { // Scissors are better than both rock and paper
+      return 0; // Predict scissors, return rock
+    } else if (s < r) {
+      if (Math.random() < 0.5) { // Scissors are worse, coin toss between rock and paper
+        return 1; // Predict rock, return paper 
+      } else {
+        return 2; // Predict paper, return scissors
+      }
+    } else { // All three are equal, return random
+      return Math.floor(Math.random() * 3);
+    }
+  }
+}
+
+function human_count(x)
+{
+  if (x > 0) {
+    document.getElementById('human_won').value = document.getElementById('human_won').valueAsNumber + 1;
+    document.getElementById('human_move').style = 'background-color: lime';
+    document.getElementById('ai_move').style = 'background-color: red';
+  } else if (x < 0) {
+    document.getElementById('ai_won').value = document.getElementById('ai_won').valueAsNumber + 1;
+    document.getElementById('human_move').style = 'background-color: red';
+    document.getElementById('ai_move').style = 'background-color: lime';
+  } else {
+    document.getElementById('human_move').style = '';
+    document.getElementById('ai_move').style = '';
+  }
+}
+
+function button_press(x)
+{
+  // Determine AI move, and only then update history of human moves
+  let m = ai_move();
+  let index = (tminus3 * 3 + tminus2) * 3 + tminus1;
+  switch (x) {
+    case 0:
+      document.getElementById('human_move').value = 'Rock';
+      rock_counter[index] =  rock_counter[index] + 1;
+      break;
+    case 1:
+      document.getElementById('human_move').value = 'Paper';
+      paper_counter[index] =  paper_counter[index] + 1;
+      break;
+    default:
+      document.getElementById('human_move').value = 'Scissors';
+      scissors_counter[index] =  scissors_counter[index] + 1;
+      break;
+  }
+  tminus3 = tminus2;
+  tminus2 = tminus1;
+  tminus1 = x;
+  rounds = rounds + 1;
+
+  // Show the results, update score board
+  switch (m) {
+    case 0: // AI rock
+      document.getElementById('ai_move').value = 'Rock';
+      switch (x) {
+        case 0: // Human rock
+          human_count(0);
+          break;
+        case 1: // Human paper
+          human_count(1);
+          break;
+        default: // Human scissors
+          human_count(-1);
+          break;
+      }
+      break;
+    case 1: // AI paper
+      document.getElementById('ai_move').value = 'Paper';
+      switch (x) {
+        case 0: // Human rock
+          human_count(-1);
+          break;
+        case 1: // Human paper
+          human_count(0);
+          break;
+        default: // Human scissors
+          human_count(1);
+          break;
+      }
+      break;
+    default: // AI scissors
+      document.getElementById('ai_move').value = 'Scissors';
+      switch (x) {
+        case 0: // Human rock
+          human_count(1);
+          break;
+        case 1: // Human paper
+          human_count(-1);
+          break;
+        default: // Human scissors
+          human_count(0);
+          break;
+      }
+      break;
+  }
+  return false;
+}
+</script>
+</head>
+<body>
+<form onsubmit="return false">
+<h3>Score</h3>
+  <p><label for="human_won">Human</label> <input type="number" id="human_won" value="0" size="5" readonly>
+     <label for="ai_won">Computer</label> <input type="number" id="ai_won" value="0"  size="5" readonly>
+  <p><input type="reset" value="Reset">
+<h3>Previous Round</h3>
+  <p><label for="human_move">Human</label> <input type="text" id="human_move" size="5" value="" readonly> 
+    <label for="ai_move">Computer</label> <input type="text" id="ai_move" size="5" value="" readonly>
+<h3>Your Move</h3>
+  <p><button onClick="button_press(0)">Rock   </button>
+     <button onClick="button_press(1)">Paper  </button>
+     <button onClick="button_press(2)">Scissors</button>
+</form>
+</body>
+</html>
