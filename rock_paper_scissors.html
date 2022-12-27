@@ -25,6 +25,11 @@ for (let i = 0; i < 3 * 3 * 3; i++) {
   scissors_counter[i] = 0;
 }
 
+function random_move()
+{
+  return Math.floor(Math.random() * 3);
+}
+  
 // Note that this function does not know current human move, only the history of previous moves
 function ai_move()
 {
@@ -176,6 +181,8 @@ function button_press(x)
   <p><button onClick="button_press(0)">Rock   </button>
      <button onClick="button_press(1)">Paper  </button>
      <button onClick="button_press(2)">Scissors</button>
+<h3>Random Move</h3>
+  <p><button onClick="button_press(random_move())">Random move</button>
 </form>
 </body>
 </html>
